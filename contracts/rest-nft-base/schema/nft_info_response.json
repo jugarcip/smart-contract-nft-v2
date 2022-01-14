@@ -26,6 +26,24 @@
     "Metadata": {
       "type": "object",
       "properties": {
+        "rarity": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "level": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "role": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "animation_url": {
           "type": [
             "string",

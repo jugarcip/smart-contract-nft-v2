@@ -150,6 +150,31 @@ pub fn execute_mint(
     Ok(response)
 }
 
+pub fn execute_set_level(
+    deps: DepsMut,
+    info: MessageInfo,
+    token_id: String,
+    level: String,
+) -> Result<Response, ContractError> {
+    let cw721_contract = RestNFTContract::default();
+    let minter = cw721_contract.minter.load(deps.storage)?;
+    let mut token = cw721_contract.tokens.load(deps.storage, &token_id)?;
+
+    if info.sender != minter {
+        return Err(ContractError::Unauthorized {});
+    }
+
+    token.extension.level = level;
+    
+    cw721_contract.tokens.save(deps.storage, &token_id.to_string(), &token)?;
+
+    Ok(Response::new()
+        .add_attribute("action", "set_level")
+        .add_attribute("sender", info.sender)
+        .add_attribute("sender", level)
+        .add_attribute("token_id", token_id))
+}
+
 pub fn execute_set_minter(
     deps: DepsMut,
     _env: Env,
