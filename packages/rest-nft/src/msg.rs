@@ -70,6 +70,8 @@ pub enum ExecuteMsg {
 
     SetLevel { token_id: String, level: String },
 
+    SetBuyAmount { buy_amount: u64 },
+
     /// Mint a new NFT, can only be called by the contract minter
     Mint(MintMsg),
 

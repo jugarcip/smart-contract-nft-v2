@@ -158,21 +158,52 @@ pub fn execute_set_level(
 ) -> Result<Response, ContractError> {
     let cw721_contract = RestNFTContract::default();
     let minter = cw721_contract.minter.load(deps.storage)?;
-    let mut token = cw721_contract.tokens.load(deps.storage, &token_id)?;
 
     if info.sender != minter {
         return Err(ContractError::Unauthorized {});
     }
 
-    token.extension.level = level;
-    
-    cw721_contract.tokens.save(deps.storage, &token_id.to_string(), &token)?;
+    cw721_contract
+    .tokens
+    .update(deps.storage, &token_id, |token| match token {
+        Some(token_info) => {
+            // token_info.extension.level = level;
+            Ok(token_info)
+        }
+        None => return Err(ContractError::TokenNotFound {}),
+    })?;
 
     Ok(Response::new()
         .add_attribute("action", "set_level")
         .add_attribute("sender", info.sender)
-        .add_attribute("sender", level)
+        .add_attribute("level", level)
         .add_attribute("token_id", token_id))
+}
+
+pub fn execute_set_buy_amount(
+    deps: DepsMut,
+    info: MessageInfo,
+    buy_amount: u64,
+) -> Result<Response, ContractError> {
+    let cw721_contract = RestNFTContract::default();
+    let minter = cw721_contract.minter.load(deps.storage)?;
+
+    if info.sender != minter {
+        return Err(ContractError::Unauthorized {});
+    }
+
+    CONFIG.update(
+        deps.storage,
+        |mut config| -> Result<Config, ContractError> {
+            config.buy_amount = Some(buy_amount);
+            Ok(config)
+        },
+    )?;
+
+    Ok(Response::new()
+        .add_attribute("action", "set_mint_amount")
+        .add_attribute("sender", info.sender)
+        .add_attribute("amount", buy_amount.to_string()))
 }
 
 pub fn execute_set_minter(
