@@ -14,7 +14,8 @@ use crate::execute::{
     execute_update,
     execute_set_level,
     execute_set_buy_amount,
-    execute_set_available
+    execute_set_available,
+    execute_buy
 };
 
 use crate::query::{query_config, query_frozen};
@@ -71,6 +72,8 @@ pub fn execute(
 
         ExecuteMsg::SetAvailable { available } => execute_set_available(deps, info, available),
         
+        ExecuteMsg::Buy { recipient } => execute_buy(deps, info, recipient),
+
         // CW721 methods
         _ => RestNFTContract::default()
             .execute(deps, env, info, msg.into())

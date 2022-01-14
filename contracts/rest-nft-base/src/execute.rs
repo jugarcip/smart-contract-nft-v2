@@ -1,4 +1,4 @@
-use cosmwasm_std::{Deps, DepsMut, Env, MessageInfo, Response};
+use cosmwasm_std::{Deps, DepsMut, Env, MessageInfo, Response, coins, Uint128, BankMsg};
 
 use cw721_base::state::TokenInfo;
 use cw721_base::MintMsg;
@@ -183,7 +183,7 @@ pub fn execute_set_level(
 pub fn execute_set_buy_amount(
     deps: DepsMut,
     info: MessageInfo,
-    buy_amount: u64,
+    buy_amount: u128,
 ) -> Result<Response, ContractError> {
     let cw721_contract = RestNFTContract::default();
     let minter = cw721_contract.minter.load(deps.storage)?;
@@ -195,7 +195,7 @@ pub fn execute_set_buy_amount(
     CONFIG.update(
         deps.storage,
         |mut config| -> Result<Config, ContractError> {
-            config.buy_amount = Some(buy_amount);
+            config.buy_amount = buy_amount;
             Ok(config)
         },
     )?;
@@ -230,6 +230,51 @@ pub fn execute_set_available(
         .add_attribute("action", "set_available")
         .add_attribute("sender", info.sender)
         .add_attribute("available", available.to_string()))
+}
+
+pub fn execute_buy(
+    deps: DepsMut,
+    info: MessageInfo,
+    recipient: String,
+) -> Result<Response, ContractError> {
+    let cw721_contract = RestNFTContract::default();
+    let minter = cw721_contract.minter.load(deps.storage)?;
+    let token_id = cw721_contract.token_count(deps.storage)? + 1;
+    let config = CONFIG.load(deps.storage)?;
+
+    if config.available != true {
+        return Err(ContractError::Unauthorized {});
+    }
+
+    if let Some(coins) = info.funds.first() {
+        if coins.denom != "uusd" || coins.amount != Uint128::from(config.buy_amount) {
+            return Err(ContractError::Funds {});
+        }
+    } else {
+        return Err(ContractError::Funds {});
+    }
+
+    let message = BankMsg::Send {
+        to_address: minter.to_string(),
+        amount: coins(config.buy_amount, "uusd"),
+    };
+
+    let mut token = cw721_contract.tokens.load(deps.storage, &token_id.to_string())?;
+    token.owner = deps.api.addr_validate(&recipient)?;
+    cw721_contract.tokens.save(deps.storage, &token_id.to_string(), &token)?;
+
+    cw721_contract
+    .token_count
+    .update(deps.storage, |count| -> Result<u64, ContractError> {
+        Ok(count + 1)
+    })?;
+
+    Ok(Response::new()
+        .add_message(message)
+        .add_attribute("action", "buy")
+        .add_attribute("sender", info.sender)
+        .add_attribute("recipient", recipient)
+        .add_attribute("token_id", token_id.to_string()))
 }
 
 pub fn execute_set_minter(

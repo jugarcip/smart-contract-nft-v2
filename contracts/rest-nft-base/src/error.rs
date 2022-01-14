@@ -25,6 +25,9 @@ pub enum ContractError {
 
     #[error("Token supply exhausted")]
     MaxTokenSupply {},
+
+    #[error("Not enougth funds")]
+    Funds {},
 }
 
 impl From<CW721ContractError> for ContractError {

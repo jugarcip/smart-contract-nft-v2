@@ -28,7 +28,7 @@ pub struct InstantiateMsg {
     // maximum token supply
     pub token_supply: Option<u64>,
 
-    pub buy_amount: Option<u64>,
+    pub buy_amount: u128,
     pub available: bool,
 }
 
@@ -70,9 +70,11 @@ pub enum ExecuteMsg {
 
     SetLevel { token_id: String, level: String },
 
-    SetBuyAmount { buy_amount: u64 },
+    SetBuyAmount { buy_amount: u128 },
 
     SetAvailable { available: bool },
+
+    Buy { recipient: String },
 
     /// Mint a new NFT, can only be called by the contract minter
     Mint(MintMsg),
