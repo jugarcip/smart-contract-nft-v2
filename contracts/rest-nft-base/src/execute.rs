@@ -134,9 +134,13 @@ pub fn execute_mint(
     mint_msg: MintMsg<Extension>,
 ) -> Result<Response, ContractError> {
     let cw721_contract = RestNFTContract::default();
-
+    let minter = cw721_contract.minter.load(deps.storage)?;
     let config = CONFIG.load(deps.storage)?;
     let current_count = cw721_contract.token_count(deps.storage)?;
+
+    if info.sender != minter {
+        return Err(ContractError::Unauthorized {});
+    }
 
     if config.token_supply.is_some() && current_count >= config.token_supply.unwrap() {
         return Err(ContractError::MaxTokenSupply {});

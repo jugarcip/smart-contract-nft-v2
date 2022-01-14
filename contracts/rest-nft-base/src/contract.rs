@@ -21,7 +21,9 @@ pub fn instantiate(
     msg: InstantiateMsg,
 ) -> StdResult<Response> {
     let config = Config {
+        buy_amount: msg.buy_amount,
         token_supply: msg.token_supply,
+        available: true,
         frozen: false,
     };
 
