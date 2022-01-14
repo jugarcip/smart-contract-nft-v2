@@ -206,6 +206,32 @@ pub fn execute_set_buy_amount(
         .add_attribute("amount", buy_amount.to_string()))
 }
 
+pub fn execute_set_available(
+    deps: DepsMut,
+    info: MessageInfo,
+    available: bool,
+) -> Result<Response, ContractError> {
+    let cw721_contract = RestNFTContract::default();
+    let minter = cw721_contract.minter.load(deps.storage)?;
+
+    if info.sender != minter {
+        return Err(ContractError::Unauthorized {});
+    }
+
+    CONFIG.update(
+        deps.storage,
+        |mut config| -> Result<Config, ContractError> {
+            config.available = available;
+            Ok(config)
+        },
+    )?;
+
+    Ok(Response::new()
+        .add_attribute("action", "set_available")
+        .add_attribute("sender", info.sender)
+        .add_attribute("available", available.to_string()))
+}
+
 pub fn execute_set_minter(
     deps: DepsMut,
     _env: Env,

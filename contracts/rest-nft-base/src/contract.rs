@@ -7,7 +7,15 @@ pub use cw721_base::{MintMsg, MinterResponse};
 use rest_nft::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use rest_nft::state::RestNFTContract;
 
-use crate::execute::{execute_freeze, execute_mint, execute_set_minter, execute_update, execute_set_level, execute_set_buy_amount};
+use crate::execute::{
+    execute_freeze,
+    execute_mint,
+    execute_set_minter,
+    execute_update,
+    execute_set_level,
+    execute_set_buy_amount,
+    execute_set_available
+};
 
 use crate::query::{query_config, query_frozen};
 use crate::state::{Config, CONFIG};
@@ -61,6 +69,8 @@ pub fn execute(
         
         ExecuteMsg::SetBuyAmount { buy_amount } => execute_set_buy_amount(deps, info, buy_amount),
 
+        ExecuteMsg::SetAvailable { available } => execute_set_available(deps, info, available),
+        
         // CW721 methods
         _ => RestNFTContract::default()
             .execute(deps, env, info, msg.into())

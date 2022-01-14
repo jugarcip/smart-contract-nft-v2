@@ -72,6 +72,8 @@ pub enum ExecuteMsg {
 
     SetBuyAmount { buy_amount: u64 },
 
+    SetAvailable { available: bool },
+
     /// Mint a new NFT, can only be called by the contract minter
     Mint(MintMsg),
 
