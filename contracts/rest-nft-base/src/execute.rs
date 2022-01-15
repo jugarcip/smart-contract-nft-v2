@@ -183,7 +183,7 @@ pub fn execute_set_level(
 pub fn execute_set_buy_amount(
     deps: DepsMut,
     info: MessageInfo,
-    buy_amount: u128,
+    buy_amount: u64,
 ) -> Result<Response, ContractError> {
     let cw721_contract = RestNFTContract::default();
     let minter = cw721_contract.minter.load(deps.storage)?;
@@ -195,7 +195,7 @@ pub fn execute_set_buy_amount(
     CONFIG.update(
         deps.storage,
         |mut config| -> Result<Config, ContractError> {
-            config.buy_amount = buy_amount;
+            config.buy_amount = Some(buy_amount);
             Ok(config)
         },
     )?;
@@ -241,13 +241,14 @@ pub fn execute_buy(
     let minter = cw721_contract.minter.load(deps.storage)?;
     let token_id = cw721_contract.token_count(deps.storage)? + 1;
     let config = CONFIG.load(deps.storage)?;
+    let buy_amount = config.buy_amount;
 
     if config.available != true {
         return Err(ContractError::Unauthorized {});
     }
 
     if let Some(coins) = info.funds.first() {
-        if coins.denom != "uusd" || coins.amount != Uint128::from(config.buy_amount) {
+        if coins.denom != "uusd" || coins.amount != buy_amount {
             return Err(ContractError::Funds {});
         }
     } else {
@@ -256,7 +257,7 @@ pub fn execute_buy(
 
     let message = BankMsg::Send {
         to_address: minter.to_string(),
-        amount: coins(config.buy_amount, "uusd"),
+        amount: coins(buy_amount, "uusd"),
     };
 
     let mut token = cw721_contract.tokens.load(deps.storage, &token_id.to_string())?;

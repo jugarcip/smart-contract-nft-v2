@@ -28,7 +28,7 @@ pub struct InstantiateMsg {
     // maximum token supply
     pub token_supply: Option<u64>,
 
-    pub buy_amount: u128,
+    pub buy_amount: Option<u64>,
     pub available: bool,
 }
 
@@ -70,7 +70,7 @@ pub enum ExecuteMsg {
 
     SetLevel { token_id: String, level: String },
 
-    SetBuyAmount { buy_amount: u128 },
+    SetBuyAmount { buy_amount: u64 },
 
     SetAvailable { available: bool },
 
