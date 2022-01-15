@@ -162,6 +162,8 @@ pub enum QueryMsg {
     /// Returns the current contract config
     Config {},
 
+    Sales {},
+
     // Checks if contract is frozen/finalised
     Frozen {},
 

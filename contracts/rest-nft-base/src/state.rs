@@ -11,4 +11,10 @@ pub struct Config {
     pub available: bool,
 }
 
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct Sales {
+    pub count: u64,
+}
+
 pub const CONFIG: Item<Config> = Item::new("config");
+pub const SALES: Item<Sales> = Item::new("sales");

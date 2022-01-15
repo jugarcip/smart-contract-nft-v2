@@ -6,7 +6,7 @@ use cw721_base::MintMsg;
 use rest_nft::state::{Extension, RestNFTContract};
 
 use crate::error::ContractError;
-use crate::state::{Config, CONFIG};
+use crate::state::{Config, CONFIG, Sales, SALES};
 
 pub fn execute_burn(
     deps: DepsMut,
@@ -168,7 +168,7 @@ pub fn execute_set_level(
     .tokens
     .update(deps.storage, &token_id, |token| match token {
         Some(token_info) => {
-            // token_info.extension.level = level;
+            // token_info.extension.level = Some(level);
             Ok(token_info)
         }
         None => return Err(ContractError::TokenNotFound {}),
@@ -240,8 +240,10 @@ pub fn execute_buy(
 ) -> Result<Response, ContractError> {
     let cw721_contract = RestNFTContract::default();
     let minter = cw721_contract.minter.load(deps.storage)?;
-    let token_id = cw721_contract.token_count(deps.storage)? + 1;
+    let sales = SALES.load(deps.storage)?;
+    let token_id = sales.count + 1;
     let config = CONFIG.load(deps.storage)?;
+    
     let buy_amount = config.buy_amount;
 
     if config.available != true {
@@ -270,6 +272,14 @@ pub fn execute_buy(
     .update(deps.storage, |count| -> Result<u64, ContractError> {
         Ok(count + 1)
     })?;
+
+    SALES.update(
+        deps.storage,
+        |mut sales| -> Result<Sales, ContractError> {
+            sales.count = token_id;
+            Ok(sales)
+        },
+    )?;
 
     Ok(Response::new()
         .add_message(message)

@@ -18,8 +18,8 @@ use crate::execute::{
     execute_buy
 };
 
-use crate::query::{query_config, query_frozen};
-use crate::state::{Config, CONFIG};
+use crate::query::{query_config, query_frozen, query_sales};
+use crate::state::{Config, CONFIG, Sales, SALES};
 use crate::{error::ContractError, execute::execute_burn};
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -35,6 +35,12 @@ pub fn instantiate(
         available: true,
         frozen: false,
     };
+
+    let sales = Sales {
+        count: 0,
+    };
+
+    SALES.save(deps.storage, &sales)?;
 
     CONFIG.save(deps.storage, &config)?;
 
@@ -85,6 +91,7 @@ pub fn execute(
 pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::Config {} => to_binary(&query_config(deps)?),
+        QueryMsg::Sales {} => to_binary(&query_sales(deps)?),
         QueryMsg::Frozen {} => to_binary(&query_frozen(deps)?),
         // CW721 methods
         _ => RestNFTContract::default().query(deps, env, msg.into()),

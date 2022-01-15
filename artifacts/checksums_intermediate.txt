@@ -1,1 +1,1 @@
-9716ea085a0a4055fcac08cd11193f4907a0ef507b9911dad7d191f03cb6a5a8  target/wasm32-unknown-unknown/release/rest_nft_base.wasm
+966c00b924944753b62990ecb74009848a7f57d672a6fbd0433158c01c1c3b63  target/wasm32-unknown-unknown/release/rest_nft_base.wasm
