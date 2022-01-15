@@ -1,4 +1,5 @@
 use cosmwasm_std::{Deps, DepsMut, Env, MessageInfo, Response, coins, Uint128, BankMsg};
+use std::convert::{From};
 
 use cw721_base::state::TokenInfo;
 use cw721_base::MintMsg;
@@ -195,7 +196,7 @@ pub fn execute_set_buy_amount(
     CONFIG.update(
         deps.storage,
         |mut config| -> Result<Config, ContractError> {
-            config.buy_amount = Some(buy_amount);
+            config.buy_amount = buy_amount;
             Ok(config)
         },
     )?;
@@ -248,7 +249,7 @@ pub fn execute_buy(
     }
 
     if let Some(coins) = info.funds.first() {
-        if coins.denom != "uusd" || coins.amount != buy_amount {
+        if coins.denom != "uusd" || coins.amount != Uint128::from(buy_amount) {
             return Err(ContractError::Funds {});
         }
     } else {
@@ -257,7 +258,7 @@ pub fn execute_buy(
 
     let message = BankMsg::Send {
         to_address: minter.to_string(),
-        amount: coins(buy_amount, "uusd"),
+        amount: coins(buy_amount.into(), "uusd"),
     };
 
     let mut token = cw721_contract.tokens.load(deps.storage, &token_id.to_string())?;

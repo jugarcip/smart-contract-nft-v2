@@ -7,7 +7,7 @@ pub struct Config {
     /// The maximum allowed number of tokens
     pub token_supply: Option<u64>,
     pub frozen: bool,
-    pub buy_amount: Option<u64>,
+    pub buy_amount: u64,
     pub available: bool,
 }
 

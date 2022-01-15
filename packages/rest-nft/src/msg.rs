@@ -28,7 +28,7 @@ pub struct InstantiateMsg {
     // maximum token supply
     pub token_supply: Option<u64>,
 
-    pub buy_amount: Option<u64>,
+    pub buy_amount: u64,
     pub available: bool,
 }
 
