@@ -3,12 +3,12 @@ mod tests {
     use crate::contract::{execute, instantiate, query};
     use crate::error::ContractError;
 
-    use cosmwasm_std::from_binary;
     use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
-    use cw721::{Cw721Query, NftInfoResponse};
+    use cosmwasm_std::{from_binary, Binary};
+    use cw721::{Cw721Contract, Cw721Query, NftInfoResponse};
     use cw721_base::MintMsg;
     use rest_nft::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
-    use rest_nft::state::{Extension, Metadata, RestNFTContract};
+    use rest_nft::state::{Extension, Metadata, RestNFTContract, Trait};
 
     const CREATOR: &str = "creator";
     const PUBLIC: &str = "public";
@@ -24,6 +24,8 @@ mod tests {
             symbol: "SPACE".to_string(),
             minter: CREATOR.to_string(),
             token_supply: None,
+            buy_amount: 0,
+            available: false,
         };
 
         instantiate(deps.as_mut(), mock_env(), info.clone(), init_msg).unwrap();
@@ -58,6 +60,8 @@ mod tests {
             symbol: "SPACE".to_string(),
             minter: CREATOR.to_string(),
             token_supply: Some(1),
+            buy_amount: 0,
+            available: false,
         };
 
         instantiate(deps.as_mut(), mock_env(), info.clone(), init_msg).unwrap();
@@ -93,6 +97,8 @@ mod tests {
             symbol: "SPACE".to_string(),
             minter: CREATOR.to_string(),
             token_supply: Some(1),
+            buy_amount: 0,
+            available: false,
         };
 
         instantiate(deps.as_mut(), mock_env(), info.clone(), init_msg).unwrap();
@@ -139,6 +145,8 @@ mod tests {
             symbol: "SPACE".to_string(),
             minter: CREATOR.to_string(),
             token_supply: Some(1),
+            buy_amount: 0,
+            available: false,
         };
 
         instantiate(deps.as_mut(), mock_env(), info.clone(), init_msg).unwrap();
@@ -166,6 +174,9 @@ mod tests {
             token_uri: Some("https://moon.com".to_string()),
             extension: Some(Metadata {
                 image: None,
+                level: None,
+                rarity: None,
+                role: None,
                 image_data: None,
                 external_url: None,
                 description: None,
@@ -194,6 +205,9 @@ mod tests {
             token_uri: Some("https://moonit.com".to_string()),
             extension: Some(Metadata {
                 image: None,
+                level: None,
+                rarity: None,
+                role: None,
                 image_data: None,
                 external_url: None,
                 description: None,
@@ -219,6 +233,8 @@ mod tests {
             symbol: "SPACE".to_string(),
             minter: CREATOR.to_string(),
             token_supply: Some(1),
+            buy_amount: 0,
+            available: false,
         };
 
         instantiate(deps.as_mut(), mock_env(), info.clone(), init_msg).unwrap();
@@ -255,6 +271,9 @@ mod tests {
             token_uri: Some("https://moonit.com".to_string()),
             extension: Some(Metadata {
                 image: None,
+                level: None,
+                rarity: None,
+                role: None,
                 image_data: None,
                 external_url: None,
                 description: None,
@@ -284,6 +303,8 @@ mod tests {
             symbol: "SPACE".to_string(),
             minter: CREATOR.to_string(),
             token_supply: Some(1),
+            buy_amount: 0,
+            available: false,
         };
 
         instantiate(deps.as_mut(), mock_env(), info.clone(), init_msg).unwrap();
@@ -317,6 +338,9 @@ mod tests {
             token_uri: Some("https://moonit.com".to_string()),
             extension: Some(Metadata {
                 image: None,
+                level: None,
+                rarity: None,
+                role: None,
                 image_data: None,
                 external_url: None,
                 description: None,
@@ -352,5 +376,67 @@ mod tests {
             token_id: token_id.to_string(),
         };
         execute(deps.as_mut(), mock_env(), info.clone(), exec_msg).unwrap();
+    }
+    #[test]
+    fn set_level() {
+        let mut deps = mock_dependencies(&[]);
+
+        let info = mock_info(CREATOR, &[]);
+        let init_msg = InstantiateMsg {
+            name: "SpaceShips".to_string(),
+            symbol: "SPACE".to_string(),
+            minter: CREATOR.to_string(),
+            token_supply: Some(1),
+            buy_amount: 0,
+            available: false,
+        };
+
+        instantiate(deps.as_mut(), mock_env(), info.clone(), init_msg).unwrap();
+
+        // create token message
+        let mint_msg = ExecuteMsg::Mint(MintMsg {
+            token_id: "001".to_string(),
+            owner: "alice".to_string(),
+            token_uri: None,
+            extension: Extension::Some(Metadata {
+                image: Some("image1".to_string()),
+                level: Some("1".to_string()),
+                rarity: Some("100".to_string()),
+                role: Some("undefined".to_string()),
+                image_data: Some("ipfs".to_string()),
+                external_url: Some("ipfs".to_string()),
+                description: Some("Bee collecting honey".to_string()),
+                name: Some("Bumble bee".to_string()),
+                attributes: Some(vec![Trait {
+                    display_type: None,
+                    trait_type: "color".to_string(),
+                    value: "yellow".to_string(),
+                }]),
+                background_color: Some("yellow".to_string()),
+                animation_url: None,
+                youtube_url: None,
+            }),
+        });
+        // Mint a token
+        let res = execute(deps.as_mut(), mock_env(), info.clone(), mint_msg).unwrap();
+
+        // Create token
+        let level_msg = ExecuteMsg::SetLevel {
+            token_id: "001".to_string(),
+            level: "55".to_string(),
+        };
+        let res = execute(deps.as_mut(), mock_env(), info.clone(), level_msg).unwrap();
+
+        let load_token = QueryMsg::NftInfo {
+            token_id: "001".to_string(),
+        };
+        let cw721_contract = RestNFTContract::default();
+        let data = cw721_contract
+            .tokens
+            .load(deps.as_mut().storage, &"001".to_string())
+            .unwrap();
+        // Assert the level was successfully updated
+        assert_eq!(data.extension.unwrap().level, Some("55".to_string()));
+        //println!("{:?}", data);
     }
 }
