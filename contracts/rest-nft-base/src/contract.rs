@@ -8,18 +8,12 @@ use rest_nft::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use rest_nft::state::RestNFTContract;
 
 use crate::execute::{
-    execute_freeze,
-    execute_mint,
-    execute_set_minter,
-    execute_update,
-    execute_set_level,
-    execute_set_buy_amount,
-    execute_set_available,
-    execute_buy
+    execute_buy, execute_freeze, execute_mint, execute_set_available, execute_set_buy_amount,
+    execute_set_level, execute_set_minter, execute_update,
 };
 
 use crate::query::{query_config, query_frozen, query_sales};
-use crate::state::{Config, CONFIG, Sales, SALES};
+use crate::state::{Config, Sales, CONFIG, SALES};
 use crate::{error::ContractError, execute::execute_burn};
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -36,9 +30,7 @@ pub fn instantiate(
         frozen: false,
     };
 
-    let sales = Sales {
-        count: 0,
-    };
+    let sales = Sales { count: 0 };
 
     SALES.save(deps.storage, &sales)?;
 
@@ -73,11 +65,11 @@ pub fn execute(
         ExecuteMsg::SetMinter { minter } => execute_set_minter(deps, env, info, minter),
 
         ExecuteMsg::SetLevel { token_id, level } => execute_set_level(deps, info, token_id, level),
-        
+
         ExecuteMsg::SetBuyAmount { buy_amount } => execute_set_buy_amount(deps, info, buy_amount),
 
         ExecuteMsg::SetAvailable { available } => execute_set_available(deps, info, available),
-        
+
         ExecuteMsg::Buy { recipient } => execute_buy(deps, info, recipient),
 
         // CW721 methods

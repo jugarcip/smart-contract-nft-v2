@@ -1,12 +1,12 @@
-use cosmwasm_std::{Deps, DepsMut, Env, MessageInfo, Response, coins, Uint128, BankMsg};
-use std::convert::{From};
+use cosmwasm_std::{coins, BankMsg, Deps, DepsMut, Env, MessageInfo, Response, Uint128};
+use std::convert::From;
 
 use cw721_base::state::TokenInfo;
 use cw721_base::MintMsg;
-use rest_nft::state::{Extension, RestNFTContract};
+use rest_nft::state::{Extension, Metadata, RestNFTContract};
 
 use crate::error::ContractError;
-use crate::state::{Config, CONFIG, Sales, SALES};
+use crate::state::{Config, Sales, CONFIG, SALES};
 
 pub fn execute_burn(
     deps: DepsMut,
@@ -165,14 +165,30 @@ pub fn execute_set_level(
     }
 
     cw721_contract
-    .tokens
-    .update(deps.storage, &token_id, |token| match token {
-        Some(token_info) => {
-            // token_info.extension.level = Some(level);
-            Ok(token_info)
-        }
-        None => return Err(ContractError::TokenNotFound {}),
-    })?;
+        .tokens
+        .update(deps.storage, &token_id, |token| match token {
+            Some(token_info) => {
+                let mut update_token = token_info;
+                let metadata = update_token.extension.clone().unwrap();
+                let new_metadata = Metadata {
+                    image: metadata.image,
+                    level: Some(level.clone()),
+                    rarity: metadata.rarity,
+                    role: metadata.role,
+                    image_data: metadata.image_data,
+                    external_url: metadata.external_url,
+                    description: metadata.description,
+                    name: metadata.name,
+                    attributes: metadata.attributes,
+                    background_color: metadata.background_color,
+                    animation_url: metadata.animation_url,
+                    youtube_url: metadata.youtube_url,
+                };
+                update_token.extension = Extension::Some(new_metadata);
+                Ok(update_token)
+            }
+            None => return Err(ContractError::TokenNotFound {}),
+        })?;
 
     Ok(Response::new()
         .add_attribute("action", "set_level")
@@ -243,7 +259,7 @@ pub fn execute_buy(
     let sales = SALES.load(deps.storage)?;
     let token_id = sales.count + 1;
     let config = CONFIG.load(deps.storage)?;
-    
+
     let buy_amount = config.buy_amount;
 
     if config.available != true {
@@ -263,23 +279,24 @@ pub fn execute_buy(
         amount: coins(buy_amount.into(), "uusd"),
     };
 
-    let mut token = cw721_contract.tokens.load(deps.storage, &token_id.to_string())?;
+    let mut token = cw721_contract
+        .tokens
+        .load(deps.storage, &token_id.to_string())?;
     token.owner = deps.api.addr_validate(&recipient)?;
-    cw721_contract.tokens.save(deps.storage, &token_id.to_string(), &token)?;
+    cw721_contract
+        .tokens
+        .save(deps.storage, &token_id.to_string(), &token)?;
 
     cw721_contract
-    .token_count
-    .update(deps.storage, |count| -> Result<u64, ContractError> {
-        Ok(count + 1)
-    })?;
+        .token_count
+        .update(deps.storage, |count| -> Result<u64, ContractError> {
+            Ok(count + 1)
+        })?;
 
-    SALES.update(
-        deps.storage,
-        |mut sales| -> Result<Sales, ContractError> {
-            sales.count = token_id;
-            Ok(sales)
-        },
-    )?;
+    SALES.update(deps.storage, |mut sales| -> Result<Sales, ContractError> {
+        sales.count = token_id;
+        Ok(sales)
+    })?;
 
     Ok(Response::new()
         .add_message(message)

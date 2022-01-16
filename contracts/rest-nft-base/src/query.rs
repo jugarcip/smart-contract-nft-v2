@@ -1,6 +1,6 @@
 use cosmwasm_std::{Deps, StdResult};
 
-use crate::state::{Config, CONFIG, Sales, SALES};
+use crate::state::{Config, Sales, CONFIG, SALES};
 
 pub fn query_config(deps: Deps) -> StdResult<Config> {
     CONFIG.load(deps.storage)
