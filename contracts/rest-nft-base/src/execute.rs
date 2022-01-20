@@ -169,16 +169,18 @@ pub fn execute_set_level(
         .update(deps.storage, &token_id, |token| match token {
             Some(token_info) => {
                 let mut update_token = token_info;
-                let metadata = update_token.extension.clone().unwrap();
+                let mut metadata = update_token.extension.clone().unwrap();
+                let mut new_attributes = metadata.attributes.clone().unwrap();
                 let mut count = 0u32;
                 loop {
-                    let set_attribute = metadata.attributes[count].clone().unwrap();
-                    if set_attribute.trait_type == "level" {
-                        metadata.attributes[count] = Trait {
+                    let mut new_attribute = new_attributes[count as usize].clone();
+                    if new_attribute.trait_type == "level" {
+                        new_attribute = Trait {
                             value: level,
                             trait_type: "level".to_string(),
                             display_type: Some("null".to_string())
                         };
+                        new_attributes[count as usize] = new_attribute;
                         break;
                     }
                     count += 1;
@@ -190,7 +192,7 @@ pub fn execute_set_level(
                     external_url: metadata.external_url,
                     description: metadata.description,
                     name: metadata.name,
-                    attributes: metadata.attributes,
+                    attributes: Some(new_attributes),
                     background_color: metadata.background_color,
                     animation_url: metadata.animation_url,
                     youtube_url: metadata.youtube_url,
