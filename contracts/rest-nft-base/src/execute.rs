@@ -3,7 +3,7 @@ use std::convert::From;
 
 use cw721_base::state::TokenInfo;
 use cw721_base::MintMsg;
-use rest_nft::state::{Extension, Metadata, RestNFTContract};
+use rest_nft::state::{Trait, Extension, Metadata, RestNFTContract};
 
 use crate::error::ContractError;
 use crate::state::{Config, Sales, CONFIG, SALES};
@@ -170,11 +170,22 @@ pub fn execute_set_level(
             Some(token_info) => {
                 let mut update_token = token_info;
                 let metadata = update_token.extension.clone().unwrap();
+                let mut count = 0u32;
+                loop {
+                    let set_attribute = metadata.attributes[count].clone().unwrap();
+                    if set_attribute.trait_type == "level" {
+                        metadata.attributes[count] = Trait {
+                            value: level,
+                            trait_type: "level".to_string(),
+                            display_type: Some("null".to_string())
+                        };
+                        break;
+                    }
+                    count += 1;
+
+                }
                 let new_metadata = Metadata {
                     image: metadata.image,
-                    level: Some(level.clone()),
-                    rarity: metadata.rarity,
-                    role: metadata.role,
                     image_data: metadata.image_data,
                     external_url: metadata.external_url,
                     description: metadata.description,
