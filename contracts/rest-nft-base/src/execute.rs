@@ -169,7 +169,7 @@ pub fn execute_set_level(
         .update(deps.storage, &token_id, |token| match token {
             Some(token_info) => {
                 let mut update_token = token_info;
-                let mut metadata = update_token.extension.clone().unwrap();
+                let metadata = update_token.extension.clone().unwrap();
                 let mut new_attributes = metadata.attributes.clone().unwrap();
                 let mut count = 0u32;
                 loop {
