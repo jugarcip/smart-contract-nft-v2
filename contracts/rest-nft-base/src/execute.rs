@@ -206,7 +206,6 @@ pub fn execute_set_level(
     Ok(Response::new()
         .add_attribute("action", "set_level")
         .add_attribute("sender", info.sender)
-        .add_attribute("level", level)
         .add_attribute("token_id", token_id))
 }
 

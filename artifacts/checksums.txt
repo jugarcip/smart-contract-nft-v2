@@ -1,1 +1,1 @@
-0974bcce3b4f37a41f3c49dd507f0b7585519523ab80b0104c26d75ff1805973  rest_nft_base.wasm
+752472c887dd4cac5f273492dcb756bcc32f03941dfa5dfe821ccbe6a3f4f503  rest_nft_base.wasm
