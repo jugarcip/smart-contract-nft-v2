@@ -70,7 +70,7 @@ pub fn execute(
 
         ExecuteMsg::SetAvailable { available } => execute_set_available(deps, info, available),
 
-        ExecuteMsg::Buy { recipient } => execute_buy(deps, info, recipient),
+        ExecuteMsg::Buy { recipient } => execute_buy(deps, env, info, recipient),
 
         // CW721 methods
         _ => RestNFTContract::default()

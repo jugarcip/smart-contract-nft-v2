@@ -3,7 +3,12 @@ use std::convert::From;
 
 use cw721_base::state::TokenInfo;
 use cw721_base::MintMsg;
-use rest_nft::state::{Trait, Extension, Metadata, RestNFTContract};
+use rest_nft::{
+    msg::{ExecuteMsg},
+    state::{Trait, Extension, Metadata, RestNFTContract},
+};
+
+use crate::contract::execute;
 
 use crate::error::ContractError;
 use crate::state::{Config, Sales, CONFIG, SALES};
@@ -263,6 +268,7 @@ pub fn execute_set_available(
 
 pub fn execute_buy(
     deps: DepsMut,
+    env: Env,
     info: MessageInfo,
     recipient: String,
 ) -> Result<Response, ContractError> {
@@ -309,6 +315,12 @@ pub fn execute_buy(
         sales.count = token_id;
         Ok(sales)
     })?;
+
+    let exec_msg = ExecuteMsg::TransferNft {
+        recipient: recipient.to_string(),
+        token_id: token_id.to_string(),
+    };
+    execute(deps, env, info.clone(), exec_msg).unwrap();
 
     Ok(Response::new()
         .add_message(message)
