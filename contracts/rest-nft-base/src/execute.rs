@@ -275,7 +275,7 @@ pub fn execute_buy(
     let cw721_contract = RestNFTContract::default();
     let minter = cw721_contract.minter.load(deps.storage)?;
     let sales = SALES.load(deps.storage)?;
-    let token_id = sales.count + 1;
+    let mut token_id = sales.count + 1;
     let config = CONFIG.load(deps.storage)?;
 
     let buy_amount = config.buy_amount;
@@ -298,9 +298,21 @@ pub fn execute_buy(
     };
 
     let mut token = cw721_contract
+    .tokens
+    .load(deps.storage, &token_id.to_string())?;
+
+    loop {
+        if token.owner == minter {
+            token.owner = deps.api.addr_validate(&recipient)?;
+            break;
+        }
+        token_id = token_id + 1;
+        token = cw721_contract
         .tokens
         .load(deps.storage, &token_id.to_string())?;
-    token.owner = deps.api.addr_validate(&recipient)?;
+    }
+
+
     cw721_contract
         .tokens
         .save(deps.storage, &token_id.to_string(), &token)?;
